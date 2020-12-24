@@ -131,4 +131,69 @@ describe MarkupFuel::Library::Serialize::Xml do
       end
     end
   end
+
+  describe 'README examples' do
+    specify 'the simple writing example works' do
+      pipeline = {
+        jobs: [
+          {
+            name: 'load_patients',
+            type: 'b/value/static',
+            register: :patients,
+            value: {
+              'patient' => [
+                {
+                  'demographics' => {
+                    'first' => 'Bozo',
+                    'last' => 'Clown'
+                  },
+                  'id' => '1'
+                },
+                {
+                  'demographics' => {
+                    'first' => 'Frank',
+                    'last' => 'Rizzo'
+                  },
+                  'id' => '2'
+                }
+              ]
+            }
+          },
+          {
+            name: 'to_xml',
+            type: 'markup_fuel/serialize/xml',
+            register: :patients,
+            root_name: :patients
+          }
+        ]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: output, payload: payload)
+
+      actual = payload['patients']
+
+      expected = <<~XML
+        <patients>
+          <patient>
+            <demographics>
+              <first>Bozo</first>
+              <last>Clown</last>
+            </demographics>
+            <id>1</id>
+          </patient>
+          <patient>
+            <demographics>
+              <first>Frank</first>
+              <last>Rizzo</last>
+            </demographics>
+            <id>2</id>
+          </patient>
+        </patients>
+      XML
+
+      expect(actual).to eq(expected)
+    end
+  end
 end

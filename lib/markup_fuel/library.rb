@@ -13,7 +13,7 @@ require_relative 'library/serialize/xml'
 module Burner
   # Open up the Burner::Jobs class and register our jobs.
   class Jobs
-    register 'markup_fuel/deserialize/xlsx', MarkupFuel::Library::Deserialize::Xml
-    register 'markup_fuel/serialize/xlsx',   MarkupFuel::Library::Serialize::Xml
+    register 'markup_fuel/deserialize/xml', MarkupFuel::Library::Deserialize::Xml
+    register 'markup_fuel/serialize/xml',   MarkupFuel::Library::Serialize::Xml
   end
 end

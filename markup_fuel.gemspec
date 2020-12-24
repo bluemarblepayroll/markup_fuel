@@ -5,10 +5,10 @@ require './lib/markup_fuel/version'
 Gem::Specification.new do |s|
   s.name        = 'markup_fuel'
   s.version     = MarkupFuel::VERSION
-  s.summary     = 'TBD'
+  s.summary     = 'XML jobs for Burner'
 
   s.description = <<-DESCRIPTION
-   TBD
+    This library adds XML-centric jobs to the Burner library.  Burner does not ship with XML jobs out of the box.
   DESCRIPTION
 
   s.authors     = ['Matthew Ruggio']

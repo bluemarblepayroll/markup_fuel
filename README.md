@@ -21,18 +21,145 @@ bundle add markup_fuel
 
 Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for more specific information on how Burner works.  This section will just focus on what this library directly adds.
 
-* **markup_fuel/deserialize/xlsx** [register, sheet_mappings]: Take the register, parse it as a Microsoft Excel Open XML spreadsheet and store the sheet data in the specified sheet_mappings' registers.  Each sheet mapping specifies which sheet to read and where to place the parsed data.  If no sheet mappings are specified then the default sheet will be parsed and placed in the register.
-* **markup_fuel/serialize/xlsx** [register, sheet_mappings]: Create a Microsoft Excel Open XML workbook and write all specified register data into their respective sheets.  The sheet_mappings will specify which sheets get data and from which register.
+* **markup_fuel/deserialize/xml** [force_array, register]: Take a register's value as a string and parse it as XML into a rich Ruby object modeling.  The `force_array` option is false by default.  If `force_array` is true then each keys' value will be wrapped in an array.
+* **markup_fuel/serialize/xml** [no_attributes, register, root_name]: Take a register's value as a Ruby object model and convert it to an XML document in string form.  The `no_attributes` option is set to true by default which will force each key to a node.  The `root_name` is nil by default, which will produce an `<opt>` node around the entire document.  This can be configured to be something other than `<opt>` by passing in something not nil.  If `root_name` is a blank string then no top level node will exist.
 
 ## Examples
 
 ### Parsing (de-serializing) an XML Document
 
-TODO
+Let's use the example fixture file as an example XML file to read and parse (located at `spec/fixtures/patients.xml`).  We could execute the following Burner pipeline:
+
+````ruby
+pipeline = {
+        jobs: [
+          {
+            name: 'read',
+            type: 'b/value/static',
+            register: 'patients',
+            value: <<~XML
+              <patients>
+                <patient>
+                  <id>1</id>
+                  <demographics>
+                    <first>Bozo</first>
+                    <last>Clown</last>
+                  </demographics>
+                </patient>
+                <patient>
+                  <id>2</id>
+                  <demographics>
+                    <first>Frank</first>
+                    <last>Rizzo</last>
+                  </demographics>
+                </patient>
+              </patients>
+            XML
+          },
+          {
+            name: 'parse',
+            register: 'patients',
+            type: 'markup_fuel/deserialize/xml'
+          }
+        ]
+      }
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+Inspecting the payload's registers would now look something like this:
+
+````ruby
+patients = payload['patients']
+
+#{
+#  'patient' => [
+#    {
+#      'demographics' => {
+#        'first' => 'Bozo',
+#        'last' => 'Clown'
+#      },
+#      'id' => '1'
+#    },
+#    {
+#      'demographics' => {
+#        'first' => 'Frank',
+#        'last' => 'Rizzo'
+#      },
+#      'id' => '2'
+#    }
+#  ]
+#}
+````
 
 ### Writing (serializing) an XML Document
 
-TODO
+Let's do an exact opposite of the above example.  Let's say we would like to write an XML document:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: 'load_patients',
+      type: 'b/value/static',
+      register: :patients,
+      value: {
+        'patient' => [
+          {
+            'demographics' => {
+              'first' => 'Bozo',
+              'last' => 'Clown'
+            },
+            'id' => '1'
+          },
+          {
+            'demographics' => {
+              'first' => 'Frank',
+              'last' => 'Rizzo'
+            },
+            'id' => '2'
+          }
+        ]
+      }
+    },
+    {
+      name: 'to_xml',
+      type: 'markup_fuel/serialize/xml',
+      register: :patients,
+      root_name: :patients
+    }
+  ]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+Inspecting the payload's registers would now look something like this:
+
+````ruby
+patients = payload['patients']
+
+# <patients>
+#   <patient>
+#     <demographics>
+#       <first>Bozo</first>
+#       <last>Clown</last>
+#     </demographics>
+#     <id>1</id>
+#   </patient>
+#   <patient>
+#     <demographics>
+#       <first>Frank</first>
+#       <last>Rizzo</last>
+#     </demographics>
+#     <id>2</id>
+#   </patient>
+# </patients>
+````
 
 ## Contributing
 

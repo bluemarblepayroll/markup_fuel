@@ -113,4 +113,68 @@ describe MarkupFuel::Library::Deserialize::Xml do
       end
     end
   end
+
+  describe 'README examples' do
+    specify 'the simple parsing example works' do
+      pipeline = {
+        jobs: [
+          {
+            name: 'read',
+            type: 'b/value/static',
+            register: 'patients',
+            value: <<~XML
+              <patients>
+                <patient>
+                  <id>1</id>
+                  <demographics>
+                    <first>Bozo</first>
+                    <last>Clown</last>
+                  </demographics>
+                </patient>
+                <patient>
+                  <id>2</id>
+                  <demographics>
+                    <first>Frank</first>
+                    <last>Rizzo</last>
+                  </demographics>
+                </patient>
+              </patients>
+            XML
+          },
+          {
+            name: 'parse',
+            register: 'patients',
+            type: 'markup_fuel/deserialize/xml'
+          }
+        ]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: output, payload: payload)
+
+      actual = payload['patients']
+
+      expected = {
+        'patient' => [
+          {
+            'demographics' => {
+              'first' => 'Bozo',
+              'last' => 'Clown'
+            },
+            'id' => '1'
+          },
+          {
+            'demographics' => {
+              'first' => 'Frank',
+              'last' => 'Rizzo'
+            },
+            'id' => '2'
+          }
+        ]
+      }
+
+      expect(actual).to eq(expected)
+    end
+  end
 end

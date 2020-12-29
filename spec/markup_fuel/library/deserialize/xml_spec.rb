@@ -53,6 +53,37 @@ describe MarkupFuel::Library::Deserialize::Xml do
       expect(actual).to eq(expected)
     end
 
+    context 'when content has attributes' do
+      let(:path) { File.join('spec', 'fixtures', 'patients_with_attrs.xml') }
+
+      specify 'payload register has deserialized data' do
+        subject.perform(output, payload)
+
+        actual = payload[register]
+
+        expected = {
+          'patient' => [
+            {
+              'demographics' => {
+                'first' => 'Bozo',
+                'last' => 'Clown'
+              },
+              'id' => '1'
+            },
+            {
+              'demographics' => {
+                'first' => 'Frank',
+                'last' => 'Rizzo'
+              },
+              'id' => '2'
+            }
+          ]
+        }
+
+        expect(actual).to eq(expected)
+      end
+    end
+
     context 'when content is nil' do
       let(:contents) { nil }
 

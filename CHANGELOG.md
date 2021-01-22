@@ -1,4 +1,4 @@
-# 0.2.0 (TBD)
+# 0.2.0 (January 22nd, 2021)
 
 Changes:
 
